@@ -20,30 +20,29 @@ def home_page():
 def ask_question(id):
     """Dynamic Question Routes"""
     resp_length = len(RESPONSES)
+    
     if resp_length == len(satisfaction_survey.questions):
         flash("Invalid entry: Thanks for participating!")
         return redirect("/thanks")
-    elif id > resp_length or id < resp_length:
+    elif id != resp_length:
         flash("Invalid entry: Please continue where you left off.")
-        id = resp_length
-        question = satisfaction_survey.questions[id]
-        return redirect(f"/question/{id}")
-    else:
-        question = satisfaction_survey.questions[id]
-        return render_template('question.html', question=question, id=id)
+        return redirect(f"/question/{resp_length}") 
+    
+    question = satisfaction_survey.questions[id] 
+    return render_template("question.html", question=question, responces=RESPONSES) 
 
 @app.route('/thanks')
 def render_thanks():
     """Renders Thanks Page"""
-    return render_template('thanks.html')
+    return render_template('thanks.html', responces=RESPONSES)
 
-@app.route('/answer/<int:id>', methods=["POST"])
-def capture_answer(id):
+@app.route('/answer', methods=["POST"])
+def capture_answer():
     """Listens for answers"""
     choice = request.form.get("choice")
     RESPONSES.append(choice)
-    if id < len(satisfaction_survey.questions) - 1:
-        id += 1
-        return redirect(f"/question/{id}")
+    if len(RESPONSES) == len(satisfaction_survey.questions):
+        return redirect("/thanks")
     else:
-        return redirect(f"/thanks")
+        return redirect(f'/question/{len(RESPONSES)}')
+  
