@@ -3,7 +3,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from surveys import satisfaction_survey
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = "4534gdghjk5d#$RGR^HDG"
+app.config['SECRET_KEY'] = "love"
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 
 debug = DebugToolbarExtension(app)
@@ -23,9 +23,10 @@ def capture_answer():
     """Listens for answers"""
     
     choice = request.form.get("choice")
-    session["responses"].append(choice)
-    session["adding_this_made_sessions_work"] = "why?"
+    # must rebind the name for proper functionality of session list
     responses = session["responses"]
+    responses.append(choice)
+    session["responses"] = responses
     
     if len(responses) == len(satisfaction_survey.questions):
         return redirect("/thanks")
@@ -42,17 +43,16 @@ def ask_question(id):
         flash("Invalid entry: Thanks for participating!")
         return redirect("/thanks")
     elif id != len(responses):
-        
         flash("Invalid entry: Please continue where you left off.")
         return redirect(f"/question/{len(responses)}") 
     
     question = satisfaction_survey.questions[id] 
-    return render_template("question.html", question=question, responses=session['responses']) 
+    return render_template("question.html", question=question) 
 
 @app.route('/thanks')
 def render_thanks():
     """Renders Thanks Page"""
-    return render_template('thanks.html', responses=session['responses'])
+    return render_template('thanks.html')
 
 
   
